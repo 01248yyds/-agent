@@ -1,5 +1,3 @@
-Python 3.13.3 (tags/v3.13.3:6280bb5, Apr  8 2025, 14:47:33) [MSC v.1943 64 bit (AMD64)] on win32
-Enter "help" below or click "Help" above for more information.
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -20,7 +18,7 @@ if "df_hierarchical" not in st.session_state: st.session_state.df_hierarchical =
 if "diagnostic_report" not in st.session_state: st.session_state.diagnostic_report = {}
 if "chat_history" not in st.session_state: st.session_state.chat_history = []
 
-# 100%继承原代码的自适应智能映射词条字典
+# 100%继承原 main_青春版V2 的自适应智能映射词条字典
 COLUMN_MAP = {
     'product_id': ['Product_ID', 'StockCode', 'product_id', '产品ID', '商品编码', 'sku'],
     'category': ['Category', 'product_category_name', '产品品类', '品类', 'category_name_1'],
@@ -28,12 +26,12 @@ COLUMN_MAP = {
     'sales': ['order_item_id', 'Quantity', '销量', '数量', 'qty_ordered']
 }
 
-# 设置图表中文字体，杜绝乱序
+# 设置图表中文字体，杜绝中文乱码
 plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'DejaVu Sans']
 plt.rcParams['axes.unicode_minus'] = False
 
 # ==========================================
-# 2. 纯本地核心计算引擎 (完全照搬、优化原 main 代码)
+# 2. 纯本地核心计算引擎 (完美继承原本地 main 代码逻辑)
 # ==========================================
 def process_dataset_pure_local(uploaded_file):
     """
@@ -93,7 +91,7 @@ def process_dataset_pure_local(uploaded_file):
             
     df_hierarchical = pd.DataFrame(hierarchical_rows)
     
-    # 6. 原汁原味的动态风险警示线逻辑 (10% 与 90% 判定门槛)
+    # 6. 100%原汁原味的动态风险警示线逻辑 (10% 与 90% 判定门槛)
     a_cats = df_category[df_category['rank'] == 'A']
     c_cats = df_category[df_category['rank'] == 'C']
     avg_rev_A = a_cats['total_revenue'].mean() if not a_cats.empty else 1
@@ -132,16 +130,17 @@ def call_ai_consultant(provider, api_key, prompt):
             response = model.generate_content(prompt)
             return response.text
     except Exception as e:
-        return f"🔑 AI 唤醒失败。请检查侧边栏密钥或网络。错误信息：{str(e)}"
+        return f"🔑 AI 专家接入失败，请检查侧边栏 API Key。错误信息：{str(e)}"
 
 # ==========================================
 # 4. 极简专业化界面渲染
 # ==========================================
-# 侧边栏：专注于纯粹的数据导入与密钥（可选）
+# 侧边栏
 with st.sidebar:
     st.markdown("### 📁 1. 数据源导入")
     uploaded_file = st.file_uploader("请上传平台导出的原始 CSV 销售流水/财务数据集", type=["csv"])
     
+    # 修复二：这里将 St.spinner 改为了正确的全小写 st.spinner
     if uploaded_file and st.button("🚀 开始自动化数据体检", use_container_width=True):
         with st.spinner("本地核心算法正在极速穿透清洗..."):
             df_cat, df_hier, r_dict = process_dataset_pure_local(uploaded_file)
@@ -149,7 +148,7 @@ with st.sidebar:
             st.session_state.df_hierarchical = df_hier
             st.session_state.diagnostic_report = r_dict
             st.session_state.analyzed = True
-            st.session_state.chat_history = [] # 重置对话
+            st.session_state.chat_history = [] # 重置历史
         st.rerun()
 
     st.markdown("---")
@@ -189,48 +188,46 @@ else:
             ax2.invert_yaxis()
             st.pyplot(fig2)
             plt.close(fig2)
-...             
-...         st.markdown("#### 📥 标准化清洗成果下载归档")
-...         col_d1, col_d2 = st.columns(2)
-...         col_d1.download_button(
-...             label="💾 导出格式化：清洗后文件.csv", 
-...             data=st.session_state.df_cleaned.to_csv(index=False).encode('utf-8-sig'),
-...             file_name="清洗后文件.csv", mime="text/csv", use_container_width=True
-...         )
-...         col_d2.download_button(
-...             label="💾 导出穿透大表：分析后文件.csv", 
-...             data=st.session_state.df_hierarchical.to_csv(index=False).encode('utf-8-sig'),
-...             file_name="分析后文件.csv", mime="text/csv", use_container_width=True
-...         )
-...         
-...         st.markdown("#### 📂 级联纵向穿透大表预览")
-...         st.dataframe(st.session_state.df_hierarchical, height=380, use_container_width=True)
-... 
-...     # ------------------ 右侧栏：解惑与 AI 答辩模拟 ------------------
-...     with col_right:
-...         st.markdown("### 💬 结论不理解？唤醒 AI 智能解惑")
-...         
-...         if not api_key:
-...             st.info("🔒 提示：当前未配置侧边栏 AI 密钥。系统正处于『100%纯本地完全离线执行模式』。若对左侧的诊断图表或预警存在疑问，请在左侧侧边栏配置 API Key 以激活高阶研讨大脑。")
-...         else:
-...             st.caption(f"🤖 决策大脑已就绪 ({ai_provider})。您可以询问诸如：‘为什么建议我整体裁剪C类？’、‘答辩时老师质疑这个结论该如何反驳？’")
-...             
-...             # 渲染历史对话
-...             for msg in st.session_state.chat_history:
-...                 with st.chat_message(msg["role"]): 
-...                     st.markdown(msg["content"])
-...             
-...             # 用户交互解惑
-...             if chat_input := st.chat_input("针对左侧图表、ABC分析结论，向 AI 咨询或请求模拟答辩..."):
+            
+        st.markdown("#### 📥 标准化清洗成果下载归档")
+        col_d1, col_d2 = st.columns(2)
+        col_d1.download_button(
+            label="💾 导出格式化：清洗后文件.csv", 
+            data=st.session_state.df_cleaned.to_csv(index=False).encode('utf-8-sig'),
+            file_name="清洗后文件.csv", mime="text/csv", use_container_width=True
+        )
+        col_d2.download_button(
+            label="💾 导出穿透大表：分析后文件.csv", 
+            data=st.session_state.df_hierarchical.to_csv(index=False).encode('utf-8-sig'),
+            file_name="分析后文件.csv", mime="text/csv", use_container_width=True
+        )
+        
+        st.markdown("#### 📂 级联纵向穿透大表预览")
+        st.dataframe(st.session_state.df_hierarchical, height=380, use_container_width=True)
+
+    # ------------------ 右侧栏：解惑与 AI 答辩模拟 ------------------
+    with col_right:
+        st.markdown("### 💬 结论不理解？唤醒 AI 智能解惑")
+        
+        if not api_key:
+            st.info("🔒 提示：当前未配置 AI 密钥。系统正处于『100%纯本地离线计算模式』。若对左侧的诊断图表或预警存在疑问，可在左侧侧边栏配置 API Key 激活外挂大脑。")
+        else:
+            # 渲染历史对话
+            for msg in st.session_state.chat_history:
+                with st.chat_message(msg["role"]): 
+                    st.markdown(msg["content"])
+            
+            # 用户交互解惑（为输入框指定唯一 Key）
+            if chat_input := st.chat_input("针对左侧图表、ABC分析结论，向 AI 咨询或请求模拟答辩...", key="pure_sku_chat"):
                 with st.chat_message("user"): 
                     st.markdown(chat_input)
                 st.session_state.chat_history.append({"role": "user", "content": chat_input})
                 
                 with st.chat_message("assistant"):
-                    with st.spinner("专家大脑正在透视数据背后故事..."):
+                    with st.spinner("AI 智囊正在透视数据背后故事..."):
                         context = f"""
                         你是一个极度高级的商业咨询专家与高校答辩评委。
-                        当前用户正在看由我们的 Python 本地确定性算法计算出来的 SKU 诊断报告。
+                        当前用户正在看由我们的 Python 本地算法计算出来的 SKU 诊断报告。
                         - 本地系统的硬核诊断警告线结论是：{st.session_state.diagnostic_report['warning']}
                         - 表现最好的前三个大类是：{st.session_state.diagnostic_report['top_cat']['category'].tolist()}
                         - 利润最高的爆款单品ID为：{st.session_state.diagnostic_report['top_prod']['product_id'].tolist()}
@@ -242,3 +239,4 @@ else:
                         reply = call_ai_consultant(ai_provider, api_key, context)
                         st.markdown(reply)
                 st.session_state.chat_history.append({"role": "assistant", "content": reply})
+                st.rerun()
